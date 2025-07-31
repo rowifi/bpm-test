@@ -32,13 +32,29 @@
     let analyser = null;
     let dataArray = null;
 
-    function startMic() {
-      if (!context) {
-        context = new AudioContext();
-        analyser = context.createAnalyser();
-        analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-      }
+function startMic() {
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      context = new AudioContext(); // moved here!
+      analyser = context.createAnalyser();
+      analyser.fftSize = 256;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      const source = context.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      setInterval(() => {
+        analyser.getByteFrequencyData(dataArray);
+        let energy = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        document.getElementById("energyDisplay").textContent = `Energy: ${energy.toFixed(2)}`;
+      }, 100);
+    })
+    .catch(err => {
+      console.error("Mic access failed:", err);
+      alert("Microphone access is required!");
+    });
+}
+
 
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
