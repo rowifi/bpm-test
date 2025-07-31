@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Energy Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background-color: #f4f4f4;
+    }
+    #energyDisplay {
+      font-size: 2em;
+      margin-top: 20px;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live Energy Tracker </h1>
+  <button onclick="startMic()">Start Listening</button>
+  <div id="energyDisplay">Energy: --</div>
+
+  <script>
+    let context = null;
+    let analyser = null;
+    let dataArray = null;
+
+    function startMic() {
+      if (!context) {
+        context = new AudioContext();
+        analyser = context.createAnalyser();
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+      }
+
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+          const source = context.createMediaStreamSource(stream);
+          source.connect(analyser);
+
+          setInterval(() => {
+            analyser.getByteFrequencyData(dataArray);
+            let energy = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+            document.getElementById("energyDisplay").textContent = `Energy: ${energy.toFixed(2)}`;
+          }, 100);
+        })
+        .catch(err => {
+          console.error("Mic access failed:", err);
+          alert("Microphone access is required!");
+        });
+    }
+  </script>
+</body>
+</html>
