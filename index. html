@@ -28,6 +28,9 @@
   <div id="energyDisplay">Energy: --</div>
 
   <script>
+  console.log("Script loaded!");
+  let context = null;
+
     let context = null;
     let analyser = null;
     let dataArray = null;
